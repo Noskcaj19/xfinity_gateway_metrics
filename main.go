@@ -41,6 +41,10 @@ func main() {
 	if !ok {
 		log.Fatalln("ROUTER_ADDR not set")
 	}
+	routerUsername, ok := os.LookupEnv("ROUTER_USERNAME")
+	if !ok {
+		routerUsername = "admin"
+	}
 	routerPassword, ok := os.LookupEnv("ROUTER_PASSWORD")
 	if !ok {
 		log.Fatalln("ROUTER_PASSWORD not set")
@@ -70,18 +74,17 @@ func main() {
 	}
 
 	client := http.Client{Jar: jar}
-	login(client, routerAddr, routerPassword)
+	login(client, routerAddr, routerUsername, routerPassword)
 
 	for {
-		extractModemData(client, writeAPI, routerAddr, routerPassword)
+		extractModemData(client, writeAPI, routerAddr, routerUsername, routerPassword)
 		time.Sleep(time.Duration(rate) * time.Second)
-
 	}
 }
 
-func login(client http.Client, routerAddr string, routerPassword string) {
+func login(client http.Client, routerAddr string, routerUsername string, routerPassword string) {
 	res, err := client.PostForm(fmt.Sprintf("%s/check.php", routerAddr), url.Values{
-		"username": {"admin"},
+		"username": {routerUsername},
 		"password": {routerPassword},
 	})
 	if err != nil {
@@ -95,7 +98,7 @@ func login(client http.Client, routerAddr string, routerPassword string) {
 	return
 }
 
-func extractModemData(client http.Client, writeAPI api.WriteAPI, routerAddr string, routerPassword string) {
+func extractModemData(client http.Client, writeAPI api.WriteAPI, routerAddr string, routerUsername string, routerPassword string) {
 	var res, err = client.Get(fmt.Sprintf("%s/network_setup.php", routerAddr))
 	if err != nil {
 		log.Panicln(err)
@@ -104,7 +107,7 @@ func extractModemData(client http.Client, writeAPI api.WriteAPI, routerAddr stri
 	body := string(bodyRaw)
 
 	if strings.Contains(body, "alert(\"Please Login First!\");") {
-		login(client, routerAddr, routerPassword)
+		login(client, routerAddr, routerUsername, routerPassword)
 		return
 	}
 
