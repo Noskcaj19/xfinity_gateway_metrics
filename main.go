@@ -83,7 +83,7 @@ func main() {
 }
 
 func login(client http.Client, routerAddr string, routerUsername string, routerPassword string) {
-	res, err := client.PostForm(fmt.Sprintf("%s/check.php", routerAddr), url.Values{
+	res, err := client.PostForm(fmt.Sprintf("%s/check.jst", routerAddr), url.Values{
 		"username": {routerUsername},
 		"password": {routerPassword},
 	})
@@ -99,7 +99,7 @@ func login(client http.Client, routerAddr string, routerUsername string, routerP
 }
 
 func extractModemData(client http.Client, writeAPI api.WriteAPI, routerAddr string, routerUsername string, routerPassword string) {
-	var res, err = client.Get(fmt.Sprintf("%s/network_setup.php", routerAddr))
+	var res, err = client.Get(fmt.Sprintf("%s/network_setup.jst", routerAddr))
 	if err != nil {
 		log.Panicln(err)
 	}
